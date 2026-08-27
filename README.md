@@ -44,6 +44,22 @@ the edge *opposite* `position` gets none, since that's the side already
 facing Hyprland's own window-to-window gap — adding floatGap there too
 would make that one side look bigger than the other three.
 
+## Remove
+
+```bash
+omarchy plugin remove charlieras262.floating-bar
+```
+
+This removes the plugin's files and switches the bar back to the stock
+`omarchy.bar`.
+
+## Dependencies
+
+`hyprctl` (ships with Hyprland/Omarchy) for the one-time `general:gaps_out`
+probe at startup. Everything else is plain QML on Omarchy's own
+`qs.Commons`/`qs.Ui` modules and the Quickshell Hyprland/Wayland
+integration — no external packages or services.
+
 ## Why this needs a workaround, and when it stops needing one
 
 Cloning any `"kind": "bar"` plugin in Omarchy 4.0.0-1 fails to render at
