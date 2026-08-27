@@ -948,6 +948,13 @@ Item {
   FileView {
     path: root.stateHome + "/omarchy/current"
     watchChanges: true
+    // Only the change notification matters here -- scheduleTransparent-
+    // ForegroundRefresh() recomputes via a separate Process, never this
+    // view's own text/data. This path is user-writable and predictable, so
+    // without preload: false, replacing it (or symlinking it) with an
+    // arbitrarily large regular file would make the shell load the whole
+    // thing into memory with no size ceiling.
+    preload: false
     printErrors: false
     onFileChanged: root.scheduleTransparentForegroundRefresh()
   }
@@ -1019,6 +1026,11 @@ Item {
   FileView {
     path: root.home + "/.local/state/omarchy/toggles"
     watchChanges: true
+    // Same reasoning as the /omarchy/current watcher above: only the change
+    // notification is used (it re-runs barHiddenProbe, a separate Process,
+    // to check for the bar-off flag), so this view never needs to load
+    // whatever's actually at this user-writable, predictable path.
+    preload: false
     printErrors: false
     onFileChanged: barHiddenProbe.running = true
   }
