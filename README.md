@@ -6,6 +6,8 @@ spanning edge-to-edge. It inherits Omarchy's own bar position, so it isn't
 locked to the top -- drag it to any edge from the menu, or with the mouse,
 the same way you would the stock bar, and it floats there too.
 
+![Floating Bar on the top, bottom, left, and right edges](preview.png)
+
 The floating gap isn't a fixed number — it's read from Hyprland's own
 `general:gaps_out` at startup and kept in sync with it afterward (e.g.
 Omarchy's own "no gaps" toggle, `omarchy hyprland window gaps toggle`,
