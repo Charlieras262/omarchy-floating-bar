@@ -90,6 +90,12 @@ Item {
   property real autoDetectedGap: 8
   readonly property real floatGap: configuredFloatGap >= 0 ? configuredFloatGap : autoDetectedGap
   property real barCornerRadius: 14
+  // When true (default), a zero gap -- e.g. Omarchy's "no gaps" toggle --
+  // squares the bar off instead of leaving it rounded while flush against
+  // the screen edge. Set false to always use barCornerRadius regardless of
+  // the current gap.
+  property bool noRoundedOnNoGaps: true
+  readonly property real effectiveCornerRadius: (noRoundedOnNoGaps && floatGap <= 0) ? 0 : barCornerRadius
   property string gapsOutProbeBuffer: ""
 
   // Reads Hyprland's configured outer gap at startup, and again on every
@@ -426,6 +432,7 @@ Item {
       ? Math.max(0, Math.min(200, config.floatGap)) : -1
     barCornerRadius = typeof config.cornerRadius === "number"
       ? Math.max(0, Math.min(200, config.cornerRadius)) : 14
+    noRoundedOnNoGaps = config.noRoundedOnNoGaps !== false
 
     // layoutEntries feeds plain JS arrays to the module Repeaters, and QML
     // cannot diff those: reassigning layoutConfig rebuilds every widget on
@@ -1113,8 +1120,9 @@ Item {
     Rectangle {
       id: barBackground
       anchors.fill: parent
-      radius: root.barCornerRadius
+      radius: root.effectiveCornerRadius
       color: root.transparent ? "transparent" : root.background
+      Behavior on radius { NumberAnimation { duration: 420; easing.type: Easing.InOutCubic } }
       Behavior on color { ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
     }
 

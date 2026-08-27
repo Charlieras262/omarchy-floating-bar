@@ -41,6 +41,7 @@ Optional, set on the bar's own entry in `~/.config/omarchy/shell.json`
 |---|---|---|---|
 | `cornerRadius` | number (px) | `14` | Corner radius of the floating bar. |
 | `floatGap` | number (px) | *(auto)* | Gap between the bar and the screen edges it floats away from. If omitted, it tracks `hyprctl getoption general:gaps_out` live (including Hyprland config reloads) — set it explicitly to override that. |
+| `noRoundedOnNoGaps` | boolean | `true` | Square the bar off whenever the gap is 0 (e.g. Omarchy's "no gaps" toggle) instead of leaving it rounded while flush against the screen edge. Set `false` to always use `cornerRadius` regardless of the current gap. |
 
 The bar is anchored to one edge (`position: "top"` by default, same as
 stock). The gap applies to the anchored edge and both perpendicular sides;
