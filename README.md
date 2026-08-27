@@ -1,8 +1,10 @@
 # Floating Bar
 
 A full [Omarchy](https://omarchy.org) bar replacement (`"kind": "bar"`): the
-stock bar, floating off the top (or left/right/bottom) of the screen with
-rounded corners instead of spanning edge-to-edge.
+stock bar, floating off the screen edge with rounded corners instead of
+spanning edge-to-edge. It inherits Omarchy's own bar position, so it isn't
+locked to the top -- drag it to any edge from the menu, or with the mouse,
+the same way you would the stock bar, and it floats there too.
 
 The floating gap isn't a fixed number — it's read from Hyprland's own
 `general:gaps_out` at startup and kept in sync with it afterward (e.g.
