@@ -92,11 +92,28 @@ Item {
   property real barCornerRadius: 14
   property string gapsOutProbeBuffer: ""
 
-  // Reads Hyprland's configured outer gap once at startup. hyprctl reports
-  // it as a CSS-style shorthand ("top right bottom left"); Omarchy/Hyprland
-  // setups almost always set all four to the same value, so the first
-  // number is used. Falls back to autoDetectedGap's default if the probe
-  // fails for any reason (hyprctl missing, unexpected output, etc.).
+  // Reads Hyprland's configured outer gap at startup, and again on every
+  // config reload -- e.g. Omarchy's "no gaps" toggle
+  // (omarchy-hyprland-window-gaps-toggle) just swaps a Lua flag file and
+  // runs `hyprctl reload`, which changes general:gaps_out without
+  // restarting the shell. hyprctl reports the gap as a CSS-style shorthand
+  // ("top right bottom left"); Omarchy/Hyprland setups almost always set
+  // all four to the same value, so the first number is used. Falls back to
+  // autoDetectedGap's previous value if a probe fails for any reason
+  // (hyprctl missing, unexpected output, etc.).
+  function refreshGapsOut() {
+    if (gapsOutProbe.running) return
+    gapsOutProbeBuffer = ""
+    gapsOutProbe.running = true
+  }
+
+  Connections {
+    target: Hyprland
+    function onRawEvent(event) {
+      if (event && event.name === "configreloaded") root.refreshGapsOut()
+    }
+  }
+
   Process {
     id: gapsOutProbe
     command: ["hyprctl", "-j", "getoption", "general:gaps_out"]
@@ -107,10 +124,10 @@ Item {
         var firstValue = parseFloat(String(parsed.css || "").trim().split(/\s+/)[0])
         if (!isNaN(firstValue)) root.autoDetectedGap = firstValue
       } catch (e) {
-        // Keep the default; a broken probe shouldn't break the bar.
+        // Keep the previous value; a broken probe shouldn't break the bar.
       }
     }
-    Component.onCompleted: running = true
+    Component.onCompleted: root.refreshGapsOut()
   }
 
   Behavior on barForeground { enabled: root.foregroundAnimationEnabled; ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }

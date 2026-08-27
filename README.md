@@ -5,9 +5,11 @@ stock bar, floating off the top (or left/right/bottom) of the screen with
 rounded corners instead of spanning edge-to-edge.
 
 The floating gap isn't a fixed number — it's read from Hyprland's own
-`general:gaps_out` at startup, so the space around the bar matches the gap
-Hyprland already puts between windows and the screen edge instead of
-introducing a second, inconsistent gap value.
+`general:gaps_out` at startup and kept in sync with it afterward (e.g.
+Omarchy's own "no gaps" toggle, `omarchy hyprland window gaps toggle`,
+updates the bar's own gap live, no reload needed), so the space around the
+bar matches the gap Hyprland already puts between windows and the screen
+edge instead of introducing a second, inconsistent gap value.
 
 ## Install
 
@@ -36,7 +38,7 @@ Optional, set on the bar's own entry in `~/.config/omarchy/shell.json`
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `cornerRadius` | number (px) | `14` | Corner radius of the floating bar. |
-| `floatGap` | number (px) | *(auto)* | Gap between the bar and the screen edges it floats away from. If omitted, it's read once at startup from `hyprctl getoption general:gaps_out` — set it explicitly to override that. |
+| `floatGap` | number (px) | *(auto)* | Gap between the bar and the screen edges it floats away from. If omitted, it tracks `hyprctl getoption general:gaps_out` live (including Hyprland config reloads) — set it explicitly to override that. |
 
 The bar is anchored to one edge (`position: "top"` by default, same as
 stock). The gap applies to the anchored edge and both perpendicular sides;
