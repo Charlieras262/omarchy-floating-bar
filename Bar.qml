@@ -89,7 +89,13 @@ Item {
   property real configuredFloatGap: -1
   property real autoDetectedGap: 8
   readonly property real floatGap: configuredFloatGap >= 0 ? configuredFloatGap : autoDetectedGap
-  property real barCornerRadius: 14
+  // Falls back to the shell's own Style.cornerRadius (which already mirrors
+  // Hyprland's decoration:rounding live -- see Commons/Style.qml) instead of
+  // a fixed constant, so the floating bar's corners match whatever rounding
+  // the rest of the shell -- and any window -- is currently using, including
+  // a live change from a plugin like Omablur, with no polling of our own.
+  property real configuredCornerRadius: -1
+  readonly property real barCornerRadius: configuredCornerRadius >= 0 ? configuredCornerRadius : Style.cornerRadius
   // When true (default), a zero gap -- e.g. Omarchy's "no gaps" toggle --
   // squares the bar off instead of leaving it rounded while flush against
   // the screen edge. Set false to always use barCornerRadius regardless of
@@ -430,8 +436,8 @@ Item {
     // so bound them to a sane range rather than trusting either verbatim.
     configuredFloatGap = typeof config.floatGap === "number"
       ? Math.max(0, Math.min(200, config.floatGap)) : -1
-    barCornerRadius = typeof config.cornerRadius === "number"
-      ? Math.max(0, Math.min(200, config.cornerRadius)) : 14
+    configuredCornerRadius = typeof config.cornerRadius === "number"
+      ? Math.max(0, Math.min(200, config.cornerRadius)) : -1
     noRoundedOnNoGaps = config.noRoundedOnNoGaps !== false
 
     // layoutEntries feeds plain JS arrays to the module Repeaters, and QML
