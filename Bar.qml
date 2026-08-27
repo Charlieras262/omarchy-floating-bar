@@ -400,8 +400,15 @@ Item {
     position = normalizePosition(config.position)
     setRequestedTransparency(config.transparent === true)
     centerAnchor = Util.canonicalWidgetId(config.centerAnchor || "")
-    configuredFloatGap = typeof config.floatGap === "number" ? config.floatGap : -1
-    barCornerRadius = typeof config.cornerRadius === "number" ? config.cornerRadius : 14
+    // Clamped: shell.json is user-editable, and these feed straight into
+    // layer-shell margins / a Rectangle radius. Not an unbounded-allocation
+    // risk the way a Repeater count is, but an extreme value (a stray extra
+    // zero) can still push the bar off-screen or into a degenerate shape,
+    // so bound them to a sane range rather than trusting either verbatim.
+    configuredFloatGap = typeof config.floatGap === "number"
+      ? Math.max(0, Math.min(200, config.floatGap)) : -1
+    barCornerRadius = typeof config.cornerRadius === "number"
+      ? Math.max(0, Math.min(200, config.cornerRadius)) : 14
 
     // layoutEntries feeds plain JS arrays to the module Repeaters, and QML
     // cannot diff those: reassigning layoutConfig rebuilds every widget on
@@ -1163,6 +1170,12 @@ Item {
           id: tooltipLabel
           anchors.centerIn: parent
           text: root.tooltipText
+          // The shared tooltip renders whatever any widget hands it,
+          // including window titles and StatusNotifier tooltip text --
+          // both set by other applications, not this shell. Force plain
+          // text so Qt's default Text.AutoText can't interpret embedded
+          // rich-text markup (e.g. <img>) from an untrusted source.
+          textFormat: Text.PlainText
           color: Color.tooltip.text
           font.family: root.fontFamily
           font.pixelSize: Style.font.body

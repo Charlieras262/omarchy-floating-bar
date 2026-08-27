@@ -137,7 +137,26 @@ BarWidget {
     // tray icon outside a standard theme (e.g. Steam's flat public/ dir). Hand
     // it straight to IconImage; guessing a theme sub-directory here only broke
     // apps whose layout didn't match the guess.
-    return String(icon || "")
+    //
+    // The icon string itself comes from a tray application over
+    // StatusNotifierItem/DBusMenu, though -- not from Quickshell -- so a
+    // malicious or buggy one could set it to any scheme (http(s)://,
+    // file://, a bare local path) instead of the image:// URL this shell
+    // expects, turning an icon property into an unwanted network request or
+    // arbitrary local file read the moment it's handed to Image.source.
+    // Only ever pass through the one scheme this shell's own icon
+    // resolution actually produces; anything else loads nothing.
+    return safeTraySource(icon)
+  }
+
+  // Shared allowlist for anything handed to an Image.source that ultimately
+  // came from a tray application (icon or menu-item icon): only Quickshell's
+  // own resolved image:// URLs pass, everything else is dropped rather than
+  // handed to Image, which would otherwise fetch/read whatever scheme and
+  // destination the string names.
+  function safeTraySource(icon) {
+    var value = String(icon || "")
+    return value.indexOf("image://") === 0 ? value : ""
   }
 
   // Symbolic icons ship a fixed fill (often near-white) that the host is meant
@@ -473,6 +492,11 @@ BarWidget {
             anchors.right: rowHideBtn.left
             anchors.rightMargin: Style.space(8)
             text: rowRoot.displayName
+            // displayName ultimately comes from a tray application's own
+            // title/tooltipTitle/id over StatusNotifierItem, not this
+            // shell -- force plain text so it can't smuggle rich-text
+            // markup into Qt's default Text.AutoText.
+            textFormat: Text.PlainText
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.bodySmall
@@ -583,6 +607,9 @@ BarWidget {
             anchors.right: parent.right
             anchors.rightMargin: Style.space(10)
             text: root.currentTitle
+            // currentTitle comes from a submenu entry's title, set by the
+            // tray application over DBusMenu -- not this shell.
+            textFormat: Text.PlainText
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.bodySmall
@@ -694,7 +721,7 @@ BarWidget {
 
               Image {
                 id: menuIcon
-                visible: !menuRow.modelData.isSeparator && String(menuRow.modelData.icon || "") !== ""
+                visible: !menuRow.modelData.isSeparator && root.safeTraySource(menuRow.modelData.icon) !== ""
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: Style.space(24)
@@ -705,7 +732,7 @@ BarWidget {
                 // which leaves PNG icons upscaled and blurry on HiDPI displays.
                 sourceSize.width: width * Screen.devicePixelRatio
                 sourceSize.height: height * Screen.devicePixelRatio
-                source: menuRow.modelData.icon
+                source: root.safeTraySource(menuRow.modelData.icon)
               }
 
               Text {
@@ -716,6 +743,9 @@ BarWidget {
                 anchors.right: submenuGlyph.left
                 anchors.rightMargin: Style.space(8)
                 text: menuRow.rowText
+                // rowText is a DBusMenu item's own label text, set by the
+                // tray application -- not this shell.
+                textFormat: Text.PlainText
                 color: root.foreground
                 font.family: root.fontFamily
                 font.pixelSize: Style.font.bodySmall

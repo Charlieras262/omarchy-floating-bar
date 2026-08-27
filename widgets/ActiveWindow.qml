@@ -33,6 +33,13 @@ BarWidget {
       anchors.left: parent.left
       width: parent.width
       text: root.title
+      // root.title is a Wayland toplevel's title -- set by whatever
+      // application owns that window, not this shell. QML's default
+      // Text.AutoText auto-detects and renders rich text, which can embed
+      // <img> tags and trigger the shell into loading arbitrary local or
+      // remote resources just from a window's title. Force plain text so
+      // untrusted window titles are always displayed literally.
+      textFormat: Text.PlainText
       color: root.bar ? root.bar.barForeground : Color.foreground
       font.family: root.bar ? root.bar.fontFamily : Style.font.family
       font.pixelSize: Style.font.body
