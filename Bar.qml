@@ -1139,9 +1139,21 @@ Item {
       id: barBackground
       anchors.fill: parent
       radius: root.effectiveCornerRadius
-      color: root.transparent ? "transparent" : root.background
+      // The theme's own background color can carry its own baked-in alpha
+      // (shell.toml's [bar] background-alpha); forcing it to 1 here first
+      // means Style.shellOpacity below is an absolute result, not a
+      // multiplier on top of an already-translucent color -- shellOpacity a
+      // plugin never touches still reaching exactly opaque.
+      color: root.transparent ? "transparent" : Qt.rgba(root.background.r, root.background.g, root.background.b, 1)
+      // Style.shellOpacity is a shared token a plugin like Omablur sets when
+      // it turns Hyprland blur on/off (see Commons/Style.qml) -- blur only
+      // renders behind a surface that isn't fully opaque. Only applies when
+      // the background is actually drawn: `transparent` already means
+      // "nothing to see here" and takes priority over it.
+      opacity: root.transparent ? 1 : Style.shellOpacity
       Behavior on radius { NumberAnimation { duration: 420; easing.type: Easing.InOutCubic } }
       Behavior on color { ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
+      Behavior on opacity { NumberAnimation { duration: 420; easing.type: Easing.InOutCubic } }
     }
 
     Loader {
