@@ -44,6 +44,27 @@ the edge *opposite* `position` gets none, since that's the side already
 facing Hyprland's own window-to-window gap — adding floatGap there too
 would make that one side look bigger than the other three.
 
+## Switch back to the stock bar (without uninstalling)
+
+```bash
+omarchy bar reset
+```
+
+A `"kind": "bar"` plugin doesn't show up in `omarchy menu plugin
+enable/disable`, and `omarchy plugin disable` doesn't apply to it either --
+that's an Omarchy-wide rule for anything that replaces the whole bar
+(`canDisable: !isBarOption` in Omarchy's own `shell.qml`), not specific to
+this plugin. A bar option isn't a toggle, it's one of several mutually
+exclusive choices, switched with `omarchy bar use <id>`:
+
+```bash
+omarchy bar use charlieras262.floating-bar   # switch to this bar
+omarchy bar reset                            # switch back to the stock bar
+```
+
+Switching back this way keeps the plugin installed, so switching to it
+again later doesn't need a reinstall.
+
 ## Remove
 
 ```bash
