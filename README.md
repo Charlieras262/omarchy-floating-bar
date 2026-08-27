@@ -110,6 +110,37 @@ Omarchy release, this plugin's workaround becomes redundant — check the
 issue/PR status if a future Omarchy update seems to double-apply something
 or warns about the properties being both set and required.
 
+## Known limitation: notification popups can overlap the bar
+
+Omarchy's own notification popups (`omarchy.notifications`, a separate
+built-in plugin) clear the bar using `barSize + Style.gapsOut`, which
+assumes the bar sits flush against the screen edge with no margin of its
+own. Since this plugin adds `floatGap` between the bar and the edge, that
+formula falls short by `floatGap`, and notifications can render slightly
+over the bar when it's on the top or right edge.
+
+This can't be fixed from this plugin's own files: `Service.qml` belongs to
+the separate `omarchy.notifications` plugin, and it only reads `barSize`
+from whichever bar is active — there's no property it checks for an edge
+margin, and its `barClearance` is a `readonly` computed property, so
+nothing external can override it either.
+
+The workaround is a one-line local patch to Omarchy's own
+`/usr/share/omarchy/shell/plugins/notifications/Service.qml`, adding a
+`barEdgeMargin` term (read from `shell.bar.floatGap` when the active bar
+defines it, `0` otherwise) into `barClearance`:
+
+```qml
+readonly property int liveBarSize: shell && shell.bar && !shell.bar.barHidden ? Math.max(0, shell.bar.barSize) : defaultBarSize
+readonly property real barEdgeMargin: shell && shell.bar && shell.bar.barHidden !== undefined
+  && shell.bar.floatGap !== undefined ? Math.max(0, Number(shell.bar.floatGap) || 0) : 0
+readonly property int barClearance: liveBarSize + barEdgeMargin + Style.gapsOut
+```
+
+Since it edits a system file outside this plugin, an Omarchy update to
+that file will revert it — reapply the same three-line change if
+notifications start overlapping the bar again after an update.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
