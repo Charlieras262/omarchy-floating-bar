@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "charlieras262.floating-bar",
+  "name": "Floating Bar",
+  "version": "1.0.0",
+  "author": "Charlieras262",
+  "description": "Full bar replacement: floats above the desktop with rounded corners and a gap matching Hyprland's window spacing",
+  "kinds": [
+    "bar"
+  ],
+  "entryPoints": {
+    "bar": "Bar.qml"
+  },
+  "omarchy": {
+    "clonedFrom": "omarchy.bar"
+  }
+}
