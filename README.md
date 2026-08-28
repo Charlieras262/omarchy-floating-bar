@@ -137,28 +137,47 @@ Omarchy's own shell, only read `barSize` from whichever bar is active (no
 property for edge margin), and their relevant properties are `readonly`
 computed values, so nothing external can override them either.
 
-`patches/apply.py` patches both files in place, adding a `barEdgeMargin`
-term (read from `shell.bar.floatGap` when the active bar defines it, `0`
-otherwise, so it's a no-op for any other bar) into their bar-clearance
-math. It's idempotent (safe to re-run), backs up the originals next to
-each file, and refuses to touch a file whose expected snippet doesn't
-match (e.g. a newer Omarchy release changed it) instead of guessing:
+Fixing it means editing those two files yourself as root — this plugin
+deliberately does not ship a script that runs as root against its own
+git-managed checkout (that checkout can change on every `omarchy plugin
+update`, which would turn an auto-run `sudo` script into a code-execution
+path into a user-writable directory). Open each file as root (e.g.
+`sudoedit /usr/share/omarchy/shell/plugins/notifications/Service.qml`) and
+add a `barEdgeMargin` term (read from `shell.bar.floatGap` when the active
+bar defines it, `0` otherwise, so it's a no-op for any other bar) into
+their bar-clearance math:
 
-```bash
-sudo python3 patches/apply.py
-omarchy restart shell
+`shell/plugins/notifications/Service.qml`, change
+
+```qml
+readonly property int barClearance: liveBarSize + Style.gapsOut
 ```
 
-To revert:
+to
 
-```bash
-sudo python3 patches/unapply.py
-omarchy restart shell
+```qml
+readonly property real barEdgeMargin: shell && shell.bar && shell.bar.barHidden !== undefined
+  && shell.bar.floatGap !== undefined ? Math.max(0, Number(shell.bar.floatGap) || 0) : 0
+readonly property int barClearance: liveBarSize + barEdgeMargin + Style.gapsOut
 ```
 
-Since these patches touch system files outside this plugin, an Omarchy
-update to either file will silently revert it — re-run `apply.py` if
-toasts or panels start overlapping the bar again after an update.
+`shell/Ui/KeyboardPanel.qml`, change
+
+```qml
+property int gap: Style.gapsOut  // distance between bar edge and panel
+```
+
+to
+
+```qml
+readonly property real barEdgeMargin: bar && bar.floatGap !== undefined
+  ? Math.max(0, Number(bar.floatGap) || 0) : 0
+property int gap: Style.gapsOut + barEdgeMargin  // distance between bar edge and panel
+```
+
+Then `omarchy restart shell`. An Omarchy update to either file will
+silently drop the edit — just reapply it if toasts or panels start
+overlapping the bar again afterward.
 
 ## License
 
