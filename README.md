@@ -44,12 +44,17 @@ Optional, set on the bar's own entry in `~/.config/omarchy/shell.json`
 | `cornerRadius` | number (px) | *(auto)* | Corner radius of the floating bar. If omitted, it follows Omarchy's own `Style.cornerRadius` — which already mirrors `decoration:rounding` live — so the bar's corners match every popup panel and any window, including a live change from a plugin like [Omablur](https://github.com/Charlieras262/omarchy-omablur). Set it explicitly to override that. |
 | `floatGap` | number (px) | *(auto)* | Gap between the bar and the screen edges it floats away from. If omitted, it tracks `hyprctl getoption general:gaps_out` live (including Hyprland config reloads) — set it explicitly to override that. |
 | `noRoundedOnNoGaps` | boolean | `true` | Square the bar off whenever the gap is 0 (e.g. Omarchy's "no gaps" toggle) instead of leaving it rounded while flush against the screen edge. Set `false` to always use `cornerRadius` regardless of the current gap. |
-The bar's own background also follows Omarchy's shared `Style.shellOpacity`
-token (distinct from the `transparent` option above, which drops the
-background to fully invisible rather than a partial, blur-showing alpha) --
-see [Omablur](https://github.com/Charlieras262/omarchy-omablur), which sets
-it while its own blur is on so the whole shell (bar, menus, notifications,
-popups) dims together, not just this bar.
+
+The bar's own background follows `[bar] background-alpha` from
+`~/.config/omarchy/shell.toml` — the same value the stock bar paints with, so
+a theme that ships a translucent bar, or a hand-edited override, applies here
+too. Where Omarchy's shared `Style.shellOpacity` token has been added to the
+shell's `Style` singleton, that takes over instead as an absolute result — see
+[Omablur](https://github.com/Charlieras262/omarchy-omablur), which sets it
+while its own blur is on so the whole shell (bar, menus, notifications,
+popups) dims together, not just this bar. Both are distinct from the
+`transparent` option above, which drops the background to fully invisible
+rather than a partial, blur-showing alpha.
 
 The bar is anchored to one edge (`position: "top"` by default, same as
 stock). The gap applies to the anchored edge and both perpendicular sides;

@@ -79,6 +79,16 @@ Item {
   property bool foregroundAnimationEnabled: true
   property color background: Color.bar.background
   property color urgent: Color.bar.active
+  // Style.shellOpacity is a shared token a plugin like Omablur adds to the
+  // shell's Style singleton; a stock Omarchy has no such property, and
+  // reading it there yields undefined. Fall back to the alpha the bar's own
+  // color already carries -- shell.toml's [bar] background-alpha, the same
+  // value the stock bar paints with -- so an unpatched shell still gets the
+  // translucency the theme, or the user, asked for.
+  readonly property real effectiveShellOpacity: {
+    var token = Style.shellOpacity
+    return (typeof token === "number" && isFinite(token)) ? token : root.background.a
+  }
   // Gap (px) between the bar surface and the screen edges/monitor sides it
   // floats away from, and the corner radius (px) of the floating bar shape.
   // Configurable via shell.json's `bar:` entry (floatGap / cornerRadius).
@@ -1147,10 +1157,13 @@ Item {
       color: root.transparent ? "transparent" : Qt.rgba(root.background.r, root.background.g, root.background.b, 1)
       // Style.shellOpacity is a shared token a plugin like Omablur sets when
       // it turns Hyprland blur on/off (see Commons/Style.qml) -- blur only
-      // renders behind a surface that isn't fully opaque. Only applies when
+      // renders behind a surface that isn't fully opaque. Where no plugin
+      // has added it, effectiveShellOpacity hands back the alpha the line
+      // above forced out of the color, so the bar stays as translucent as
+      // the theme asked instead of being pinned opaque. Only applies when
       // the background is actually drawn: `transparent` already means
       // "nothing to see here" and takes priority over it.
-      opacity: root.transparent ? 1 : Style.shellOpacity
+      opacity: root.transparent ? 1 : root.effectiveShellOpacity
       Behavior on radius { NumberAnimation { duration: 420; easing.type: Easing.InOutCubic } }
       Behavior on color { ColorAnimation { duration: 420; easing.type: Easing.InOutCubic } }
       Behavior on opacity { NumberAnimation { duration: 420; easing.type: Easing.InOutCubic } }
